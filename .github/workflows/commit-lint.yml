@@ -8,26 +8,25 @@ jobs:
   check-commits:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Validate commits messages
+      - name: Validate commit messages
         run: |
           COMMITS=$(git log origin/${{ github.base_ref }}..HEAD --format=%s)
           REGEX="^(feat|fix|hotfix|refactor|docs|style|test|perf|build|ci|chore)(\(.*\))?: .* TG-[0-9]+$"
-          MERGE_REGEX="^Merge branch .*"
+          MERGE_REGEX="^(Merge branch .*|Merge [0-9a-fA-F]+ into [0-9a-fA-F]+|Merge pull request .*)"
           echo "$COMMITS" | while read -r commit; do
-            # Ignora commits de merge automáticos de Git
             if [[ "$commit" =~ $MERGE_REGEX ]]; then
               continue
             fi
             if [[ ! "$commit" =~ $REGEX ]]; then
-              echo "Formato inválido: \"$commit\""
-              echo "El commit debe seguir el formato: 'tipo: mensaje TG-123'"
+              echo "Invalid format: \"$commit\""
+              echo "Commit must follow the format: 'type: message TG-123'"
               exit 1
             else
-              echo "Formato correcto: \"$commit\""
+              echo "Correct format: \"$commit\""
             fi
           done
