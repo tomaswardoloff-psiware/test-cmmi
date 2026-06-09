@@ -1,3 +1,5 @@
 # Archivo de prueba
 
 La idea es probar si funciona el template de la pull request
+
+## Validar formato de commits
