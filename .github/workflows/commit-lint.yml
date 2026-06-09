@@ -1,0 +1,33 @@
+name: Validate Commits
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commits messages
+        run: |
+          COMMITS=$(git log origin/${{ github.base_ref }}..HEAD --format=%s)
+          REGEX="^(feat|fix|hotfix|refactor|docs|style|test|perf|build|ci|chore)(\(.*\))?: .* TG-[0-9]+$"
+          MERGE_REGEX="^Merge branch .*"
+          echo "$COMMITS" | while read -r commit; do
+            # Ignora commits de merge automáticos de Git
+            if [[ "$commit" =~ $MERGE_REGEX ]]; then
+              continue
+            fi
+            if [[ ! "$commit" =~ $REGEX ]]; then
+              echo "Formato inválido: \"$commit\""
+              echo "El commit debe seguir el formato: 'tipo: mensaje TG-123'"
+              exit 1
+            else
+              echo "Formato correcto: \"$commit\""
+            fi
+          done
